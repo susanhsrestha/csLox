@@ -2,7 +2,7 @@
 
 namespace csLox;
 
-public class csLox
+public static class csLox
 {
     static bool HadError = false;
     public static void Main(String[] args)
@@ -48,10 +48,12 @@ public class csLox
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.ScanTokens();
 
-        foreach (Token token in tokens)
-        {
-            Console.WriteLine(token);
-        }
+        Parser parser = new Parser(tokens);
+        Expr expression = parser.Parse();
+
+        if (HadError) return;
+
+        Console.WriteLine(new AstPrinter().Print(expression));
     }
 
     public static void Error(int line, String message)
@@ -63,5 +65,17 @@ public class csLox
     {
         Console.Error.WriteLine("[line " + line + "] Error" + where + ": " + message);
         HadError = true;
+    }
+
+    public static void Error(Token token, string message)
+    {
+        if (token.type == TokenType.EOF)
+        {
+            Report(token.line, " at end", message);
+        }
+        else
+        {
+            Report(token.line, " at '" + token.lexeme + "'", message);
+        }
     }
 }
